@@ -1,0 +1,15 @@
+{
+    "mode":"unittest",
+    "tests": [
+        {
+            "display_name": "get_province",
+            "file": "sample\\get_province.json",
+            "id":[2]
+        },
+        {
+            "display_name": "get_district",
+            "file": "sample\\get_districts.json",
+            "id":["1-2"]
+        }
+    ]
+}

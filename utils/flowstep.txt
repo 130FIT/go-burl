@@ -1,0 +1,243 @@
+// package utils
+
+// import (
+// 	"encoding/json"
+// 	"errors"
+// 	"fmt"
+// 	"io"
+// 	"net/http"
+// 	"path/filepath"
+// 	"strconv"
+// 	"strings"
+// )
+
+// var TestStepReport = CreateTestStep()
+// var Step = 1
+// var SumaryReport = Sumary{0, 0, 0}
+
+// func FlowStepTesting(fileList []string) {
+// 	listStepFlow := []map[string]int{}
+// 	for _, file := range fileList {
+// 		testCaseIDs := make(map[string]int)
+// 		parts := strings.Split(file, "-")
+// 		if len(parts) != 2 {
+// 			AddErrorReport(fmt.Sprintf("Invalid format for file %s", file))
+// 			SetEndProcessReport("error")
+// 			return
+// 		}
+// 		fileName := strings.TrimSpace(parts[0])
+
+// 		caseID, err := strconv.Atoi(parts[1])
+// 		if err != nil {
+// 			AddErrorReport(fmt.Sprintf("Invalid format for file %s", file))
+// 			SetEndProcessReport("error")
+// 			return
+// 		}
+// 		testCaseIDs[fileName] = caseID
+// 		listStepFlow = append(listStepFlow, testCaseIDs)
+// 	}
+// 	err := processFlowFile(listStepFlow)
+// 	if err != nil {
+// 		SaveReportToFile("Failed")
+// 		return
+// 	}
+// }
+
+// func processFlowFile(listStepFlow []map[string]int) error {
+// 	capturedValues := make(map[string]interface{})
+// 	for _, testCaseIDs := range listStepFlow {
+// 		for fileName, caseID := range testCaseIDs {
+// 			fmt.Printf("\n๐ Processing file: %s\n", fileName)
+// 			config, err := LoadConfigFlowProcess(fileName, capturedValues)
+
+// 			if err != nil {
+// 				AddErrorReport(fmt.Sprintf("Error loading file %s: %v", fileName, err))
+// 				break
+// 			}
+// 			indexOfCaseId := FindTestIndex(config.Cases, caseID)
+// 			if indexOfCaseId == -1 {
+// 				AddErrorReport(fmt.Sprintf("Error loading file %s: caseID %d not found", fileName, caseID))
+// 				break
+// 			}
+// 			TestStepReport.SetTitle(Step, fileName, config.URL, config.Method, caseID, config.Cases[indexOfCaseId].Name, config.Cases[indexOfCaseId].AssertResponse, config.Cases[indexOfCaseId].Status, config.TypeAPI)
+// 			err, capturedValues2 := processFile(config, []int{caseID}, true)
+// 			if err != nil {
+// 				AddErrorReport(fmt.Sprintf("Error processing file %s: %v", fileName, err))
+// 				break
+// 			}
+// 			for key, value := range capturedValues2 {
+// 				capturedValues[key] = value
+// 			}
+// 			TestStepReport.CapturedValues = capturedValues2
+// 		}
+// 		Step++
+// 		AddTestStepReport(TestStepReport)
+// 		TestStepReport = CreateTestStep()
+// 	}
+
+// 	SaveReportToFile("Passed")
+// 	return nil
+// }
+
+// func TestAll(listFile []string) {
+// 	fl := FileListForTest{}
+// 	for _, file := range listFile {
+// 		parts := strings.Split(file, "-")
+// 		filename := strings.TrimSpace(parts[0])
+// 		caseId := strings.TrimSpace(parts[1])
+// 		fl.AddCaseId(filename, caseId)
+// 	}
+// 	for _, f := range fl.fileList {
+// 		fmt.Print("\n\n====================================\n\n")
+// 		fmt.Printf("\n\n๐ Processing file: %s\n", f)
+// 		config, err := LoadConfig(f.fileName)
+// 		if err != nil {
+// 			AddErrorReport(fmt.Sprintf("Error loading file %s: %v", f.fileName, err))
+// 			continue
+// 		}
+// 		testCases := []TestCase{}
+// 		if f.caseIDs[0] == "*" {
+// 			testCases = config.Cases
+// 		} else {
+// 			for _, caseId := range f.caseIDs {
+// 				id, _ := strconv.Atoi(caseId)
+// 				indexOfCaseId := FindTestIndex(config.Cases, id)
+// 				if indexOfCaseId == -1 {
+// 					AddErrorReport(fmt.Sprintf("Error loading file %s: caseID %d not found", f.fileName, id))
+// 					continue
+// 				}
+// 				testCases = append(testCases, config.Cases[indexOfCaseId])
+// 			}
+// 		}
+// 		config.Cases = testCases
+// 		SumaryReport.AddTotal(len(config.Cases))
+// 		err, _ = processFile(config, getAllIdTestCase(config), false)
+// 		if err != nil {
+// 			AddErrorReport(fmt.Sprintf("Error processing file %s", f.fileName))
+// 			continue
+// 		}
+// 	}
+// 	printSumary()
+// }
+// func printSumary() {
+// 	fmt.Print("\n\n====================================\n\n")
+// 	urlPath := fmt.Sprintf("file:///%s", filepath.ToSlash(DirPath))
+// 	sumaryText := "Sumary report" +
+// 		fmt.Sprintf("\n\n\t๐ Total test cases: %d", SumaryReport.Totals) +
+// 		fmt.Sprintf("\n\t๐ Passed test cases: %d", SumaryReport.Passed) +
+// 		fmt.Sprintf("\n\t๐ Failed test cases: %d\n", SumaryReport.Failed) +
+// 		fmt.Sprintf("\n\n\t๐ Path to report: %s\n", urlPath)
+// 	if SumaryReport.Failed > 0 {
+// 		PrintRed(sumaryText)
+// 	} else {
+// 		PrintGreen(sumaryText)
+// 	}
+
+// }
+// func getAllIdTestCase(config *TestConfig) []int {
+// 	testCaseIDs := []int{}
+// 	for _, testCase := range config.Cases {
+// 		testCaseIDs = append(testCaseIDs, testCase.ID)
+// 	}
+// 	return testCaseIDs
+// }
+// func processFile(config *TestConfig, testCaseIDs []int, inFlow bool) (error, map[string]interface{}) {
+// 	capturedValues := make(map[string]interface{})
+// 	for _, testCase := range config.Cases {
+// 		if len(testCaseIDs) > 0 && !contains(testCaseIDs, testCase.ID) {
+// 			continue
+// 		}
+// 		fmt.Print("\n\n------------------------------------\n\n")
+// 		fmt.Printf("\n> Running test case: id:%d %s\n", testCase.ID, testCase.Name)
+
+// 		// Merge base request with case-specific request data
+// 		reqData := make(map[string]interface{})
+// 		for key, value := range config.BaseRequest {
+// 			reqData[key] = value
+// 		}
+// 		for key, value := range testCase.Request {
+// 			reqData[key] = value
+// 		}
+// 		resp, err := sendRequest(config.URL, config.Method, config.Headers, reqData, config.TypeAPI == "xml")
+// 		if err != nil {
+// 			AddErrorReport(fmt.Sprintf("Test case %d failed: %v", testCase.ID, err))
+// 			SumaryReport.Failed++
+// 			if inFlow {
+// 				return errors.New("test case step failed"), nil
+// 			}
+// 			continue
+// 		}
+// 		var saveConfig = config
+// 		saveConfig.Cases = []TestCase{testCase}
+// 		configByte, _ := json.Marshal(saveConfig)
+// 		SaveRequestToFile(configByte, ".json", Step)
+
+// 		TestStepReport.RequestHeader = resp.Request.Header.Clone()
+// 		TestStepReport.ResponseHeader = resp.Header.Clone()
+// 		TestStepReport.ResponseCode = resp.StatusCode
+// 		contentType := resp.Header.Get("Content-Type")
+// 		fileType := GetFileExtensionFromContentType(contentType)
+// 		TestStepReport.ResponseType = strings.Replace(fileType, ".", "", -1)
+// 		bodyBytes, err := io.ReadAll(resp.Body)
+// 		resp.Body.Close()
+// 		if err != nil {
+// 			SumaryReport.Failed++
+// 			if inFlow {
+// 				return fmt.Errorf("error reading response body: %w", err), nil
+// 			}
+// 			continue
+// 		}
+// 		SaveResponseToFile(bodyBytes, fileType, Step)
+// 		if err != nil {
+// 			AddErrorReport(fmt.Sprintf("Test case %d failed: %v", testCase.ID, err))
+// 			SumaryReport.Failed++
+// 			if inFlow {
+// 				return errors.New("test case step failed"), nil
+// 			}
+// 			continue
+// 		}
+// 		err = checkResponse(bodyBytes, resp, testCase.Status, testCase.AssertResponse, config.Captures, capturedValues, config.TypeAPI == "xml")
+// 		if err != nil {
+// 			AddErrorReport(fmt.Sprintf("Test case %d failed...", testCase.ID))
+// 			TestStepReport.TestStatus = "Failed"
+// 			SumaryReport.Failed++
+// 			if inFlow {
+// 				return errors.New("test case step failed"), nil
+// 			}
+// 			continue
+// 		} else {
+// 			TestStepReport.TestStatus = "Passed"
+// 			PrintGreen(fmt.Sprintf("Test case %d passed", testCase.ID))
+// 		}
+
+// 		if !inFlow {
+// 			Step++
+// 		}
+// 		SumaryReport.Passed++
+
+// 	}
+// 	if len(capturedValues) > 0 && inFlow {
+// 		fmt.Printf("\n\033[34m\n\nCaptured values:\033[0m\n")
+// 		capturedValuesBytes, err := json.MarshalIndent(capturedValues, "", "    ")
+// 		if err != nil {
+// 			SumaryReport.Failed++
+// 			if inFlow {
+// 				return err, nil
+// 			}
+// 		}
+// 		fmt.Printf("\033[34m%s\033[0m\n", string(capturedValuesBytes))
+// 	}
+// 	return nil, capturedValues
+// }
+
+// func contains(slice []int, item int) bool {
+// 	for _, i := range slice {
+// 		if i == item {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }
+
+
+

@@ -1,0 +1,21 @@
+{
+    "url": "https://mocktarget.apigee.net/xml",
+    "method": "GET",
+    "type": "xml",
+    "base_request_xml":"",
+    "captures":[
+    ],
+    "cases":[
+        {
+            "id": 1,
+            "name": "get info",
+            "description": "get info should return 200 with contain city San Jose",
+            "tags":["info"],
+            "status": 200,
+            "request_xml":"",
+            "assert_response": {
+                "(contains)root.city": "San"
+            }
+        }
+    ]
+}

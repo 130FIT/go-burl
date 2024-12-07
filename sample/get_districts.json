@@ -1,0 +1,48 @@
+{
+    "url": "https://uniqlo-customerapi.brainergy.io/reqft/get_district",
+    "method": "POST",
+    "headers": {
+        "Content-Type": "application/json"
+    },
+    "type": "json",
+    "base_request": {
+        "province_id": 82
+    },
+    "captures": [
+        {
+            "pass_path": "base_request.district_id",
+            "capture_path": "data[0].district_id"
+        }
+    ],
+    "cases": [
+        {
+            "id": 1,
+            "name": "get district info should return 200",
+            "status": 200,
+            "assert_response": {
+                "(count)(>=)data": 0
+            }
+        },
+        {
+            "id": 2,
+            "name": "get district info should return 200",
+            "description": "get distring info should return 200 but invalid province id",
+            "request": {
+                "province_id": 999
+            },
+            "status": 200,
+            "assert_response": {
+                "(==)status": 400
+            }
+        },
+        {
+            "id": 3,
+            "name": "get district info should return 200",
+            "status": 200,
+            "skip_captures": true,
+            "assert_response": {
+                "(count)(>=)data": 1
+            }
+        }
+    ]
+}

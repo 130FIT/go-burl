@@ -1,0 +1,43 @@
+{
+    "url": "https://uniqlo-customerapi.brainergy.io/reqft/get_provi",
+    "method": "POST",
+    "headers": {
+        "Content-Type": "application/json"
+    },
+    "type": "json",
+    "captures":[
+        {
+            "pass_path": "base_request.province_id",
+            "capture_path": "data[0].province_id"
+        }
+    ],
+    "cases":[
+        {
+            "id": 1,
+            "name": "get get province info should return 200 with morn than 70 province",
+            "description": "get get province info should return 200 with morn than 70 province",
+            "tags":["province"],
+            "status": 200,
+            "assert_response": {
+                "(count)(>=)data": 70
+            }
+        },
+        {
+            "id": 2,
+            "name": "get get province info should return 200 with morn than 75 province",
+            "status": 200,
+            "assert_response": {
+                "(count)data": 75
+            }
+        },
+        {
+            "id": 3,
+            "name": "get get province info should return 200 with morn than 77 province",
+            "status": 200,
+            "assert_response": {
+                "(count)(>=)data": 77
+            }
+        }
+
+    ]
+}

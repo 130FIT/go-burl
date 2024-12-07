@@ -1,0 +1,39 @@
+{
+    "url": "https://pokeapi.co/api/v2/pokemon/pikachu",
+    "method": "GET",
+    "headers": {
+        "Content-Type": "application/json"
+    },
+    "base_request":{
+        "A":"A"
+    },
+    "type": "json",
+    "captures":[
+        {
+            "pass_path": "cases[0].request.name",
+            "capture_path": "abilities[0].ability.url"
+        }
+    ],
+    "cases":[
+        {
+            "id": 1,
+            "name": "get pikachu info should return 200",
+            "status": 200,
+            "request":{
+                "A":"B"
+            },
+            "assert_response": {
+                "name": "pikachu",
+                "forms[0].name": "pikachu"
+            }
+        },
+        {
+            "id": 2,
+            "name": "get pikachu info should return 400",
+            "status": 400,
+            "request":{
+                "A":"C"
+            }
+        }
+    ]
+}
